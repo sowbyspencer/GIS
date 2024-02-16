@@ -1,0 +1,19 @@
+{
+  "name": "gis",
+  "version": "1.0.0",
+  "description": "",
+  "main": "js.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@esri/arcgis-rest-auth": "^4.0.2",
+    "@esri/arcgis-rest-geocoding": "^4.0.2",
+    "@esri/arcgis-rest-request": "^4.0.2",
+    "@esri/arcgis-rest-routing": "^4.0.2",
+    "express": "^4.18.2"
+  }
+}
