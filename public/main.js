@@ -8,6 +8,9 @@
 //   authentication: ApiKeyManager.fromkey("AAPK8e49e4e2abd64d5a90248a616a7a84b5wpFnclWyrsIGlXMXKmPOLW47c2Zf_jA3a8q4djCkHVQTAiU454MiP_yKiZGqtNvy")
 // })
 
+/* The code is using the `require` function to import the necessary modules from
+the ArcGIS API for JavaScript. It is importing the `Map`, `MapView`, `Graphic`,
+and `GraphicsLayer` modules. */
 require([
   "esri/Map",
   "esri/views/MapView",
@@ -24,60 +27,50 @@ require([
     zoom: 12
   });
 
-  // Graphics layer to hold markers
   var graphicsLayer = new GraphicsLayer();
   map.add(graphicsLayer);
 
-  // Array of marker locations
-  var markerLocations = [
-    { latitude: 65.0, longitude: 15.0, info: "Marker 1" },
-    { latitude: 65.5, longitude: 15.5, info: "Marker 2" },
-    { latitude: 66.0, longitude: 16.0, info: "Marker 3" }
-  ];
+  var username = "your_username"; // Replace with your GeoNames username
 
-  // Add markers to the map
-  markerLocations.forEach(function(location) {
-    var point = {
-      type: "point",
-      longitude: location.longitude,
-      latitude: location.latitude
-    };
+  // Function to fetch city data based on latitude and longitude
+  function fetchCityData(lat, lon) {
+    var north = lat + 1; // Adjust the value as needed
+    var south = lat - 1; // Adjust the value as needed
+    var east = lon + 1; // Adjust the value as needed
+    var west = lon - 1; // Adjust the value as needed
 
-    var markerSymbol = {
-      type: "simple-marker",
-      color: [226, 119, 40], // Orange
-      outline: {
-        color: [255, 255, 255], // White
-        width: 1
-      }
-    };
+    fetch(`http://api.geonames.org/citiesJSON?north=${north}&south=${south}&east=${east}&west=${west}&lang=en&username=${username}`)
+      .then(response => response.json())
+      .then(data => {
+        // Add markers to the map based on the fetched data
+      })
+      .catch(error => console.error("Error fetching city data: ", error));
+  }
 
-    var popupTemplate = {
-      title: "Marker Information",
-      content: location.info
-    };
-
-    var markerGraphic = new Graphic({
-      geometry: point,
-      symbol: markerSymbol,
-      popupTemplate: popupTemplate
-    });
-
-    graphicsLayer.add(markerGraphic);
-  });
-
-  // Get the user's location
+  // Get the user's location or use the default location
+  var defaultLat = 65;
+  var defaultLon = 15;
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(function(position) {
       view.center = [position.coords.longitude, position.coords.latitude];
+      fetchCityData(position.coords.latitude, position.coords.longitude);
     }, function(error) {
       console.error("Error getting user location: ", error);
-      // Set a default location if access to user location is denied
-      view.center = [15, 65]; // Default longitude, latitude
+      view.center = [defaultLon, defaultLat];
+      fetchCityData(defaultLat, defaultLon);
     });
   } else {
     console.error("Geolocation is not supported by this browser.");
-    // Set a default location if geolocation is not supported
-    view.center = [15, 65]; // Default longitude, latitude
+    view.center = [defaultLon, defaultLat];
+    fetchCityData(defaultLat, defaultLon);
   }
+
+  // Function to set a new location and fetch data
+  function setNewLocation(lat, lon) {
+    view.center = [lon, lat];
+    fetchCityData(lat, lon);
+  }
+
+  // Example usage of setNewLocation
+  // setNewLocation(40.7128, -74.0060); // New York City
 });
