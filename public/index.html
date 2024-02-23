@@ -6,19 +6,27 @@
   <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>ArcGIS Developer Guide: Service areas</title>
 
-  <link rel="stylesheet" href="https://js.arcgis.com/4.24/esri/themes/light/main.css" />
-  <script src="https://js.arcgis.com/4.24/"></script>
+  <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.28/esri/themes/light/main.css"
+    />
+    <script src="https://js.arcgis.com/4.28"></script>
   <style>
+    html,
+    body,
     #viewDiv {
+      padding: 0;
+      margin: 0;
       height: 100vh;
-      width: 100vw;
+      width: 80vw;
     }
   </style>
+  <script src="main.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBd0844kA4Jq9fv7nGfz617It_rYTxBY6c&libraries=places"></script>
 </head>
 
 <body>
   <div id="viewDiv"></div>
-  <script src="main.js"></script>
 </body>
 
 </html>

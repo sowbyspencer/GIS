@@ -14,6 +14,7 @@
     "@esri/arcgis-rest-geocoding": "^4.0.2",
     "@esri/arcgis-rest-request": "^4.0.2",
     "@esri/arcgis-rest-routing": "^4.0.2",
+    "cors": "^2.8.5",
     "express": "^4.18.2"
   }
 }
