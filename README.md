@@ -5,6 +5,7 @@ This project is a web-based GIS application designed to further my learning as a
 The purpose of this software is to gain hands-on experience with GIS technologies and to understand how to integrate and display geographical data in a web application.
 
 [Software Demo Video](http://youtube.link.goes.here)
+[Try It Out](https://sowbyspencer.github.io/GIS/public/)
 
 # Development Environment
 
