@@ -105,7 +105,7 @@ require([
         url
       );
       travelMode = networkDescription.supportedTravelModes.find(
-        (travelMode) => travelMode.name === "Walking Time"
+        (travelMode) => travelMode.name === "Driving Time"
       );
     }
 
@@ -114,7 +114,7 @@ require([
       facilities: new FeatureSet({
         features: [locationFeature],
       }),
-      defaultBreaks: [15], // minutes
+      defaultBreaks: [30], // minutes
       travelMode,
       travelDirection: "from-facility",
       outSpatialReference: view.spatialReference,

@@ -1,10 +1,11 @@
 # Overview
 
-This project is a web-based GIS application designed to further my learning as a software engineer. The application displays a map using the ArcGIS API for JavaScript and allows users to view markers representing various locations, such as restaurants, parks, and schools, fetched dynamically using the Google Places API. Additionally, the application features interactive isochrone overlays that users can generate by clicking on the map. The overlays and markers are updated based on the clicked location, enhancing the geographical data interaction within the web application.
+This project is a web-based GIS application designed to further my learning as a software engineer. The application displays a map using the ArcGIS API for JavaScript and allows users to view markers representing various locations, such as restaurants, parks, and schools, fetched dynamically using the Google Places API. Additionally, the application features interactive isochrone overlays that users can generate by clicking on the map. The overlays and markers are updated based on the clicked location, enhancing the geographical data interaction within the web application. The isochrone is currently set to a 30-minute driving time distance.
 
 The purpose of this software is to gain hands-on experience with GIS technologies and to understand how to integrate and display geographical data in a web application.
 
 [Software Demo Video](http://youtube.link.goes.here)
+
 [Try It Out](https://sowbyspencer.github.io/GIS/public/)
 
 # Development Environment
