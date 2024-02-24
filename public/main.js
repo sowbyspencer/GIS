@@ -213,37 +213,47 @@ require([
     });
   }
 
-  // Get the user's location or use the default location
-  var defaultLat = 65;
-  var defaultLon = 15;
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      // Callback function executed when the user's geolocation is successfully retrieved.
-      // Sets the center of the map view to the user's current location using longitude and
-      // latitude coordinates from geolocation data.
-      // Calls the `fetchPlaces` function with the user's latitude and longitude coordinates
-      // to fetch nearby restaurants and display them as markers on the map.
-      function (position) {
-        view.center = [position.coords.longitude, position.coords.latitude];
-        // Call fetchPlaces with the user's location
-        fetchPlaces(position.coords.latitude, position.coords.longitude);
-      },
+  /**
+   * The function `locationAndPlaces` retrieves the user's geolocation and
+   * displays nearby restaurants on a map, handling errors and using default
+   * location if needed.
+   */
+  function locationAndPlaces() {
+    // Get the user's location or use the default location
+    var defaultLat = 65;
+    var defaultLon = 15;
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        // Callback function executed when the user's geolocation is successfully retrieved.
+        // Sets the center of the map view to the user's current location using longitude and
+        // latitude coordinates from geolocation data.
+        // Calls the `fetchPlaces` function with the user's latitude and longitude coordinates
+        // to fetch nearby restaurants and display them as markers on the map.
+        function (position) {
+          view.center = [position.coords.longitude, position.coords.latitude];
+          // Call fetchPlaces with the user's location
+          fetchPlaces(position.coords.latitude, position.coords.longitude);
+        },
 
-      // Callback function handling errors when attempting to retrieve the user's geolocation.
-      // Displays an error message indicating that geolocation is not available or permission is denied.
-      function (error) {
-        console.error("Error getting user location: ", error);
-        view.center = [defaultLon, defaultLat];
-        // Call fetchPlaces with the default location
-        fetchPlaces(defaultLat, defaultLon);
-      }
-    );
-  } else {
-    // Handle a scenario where geolocation is not supported by the user's browser.
-    // Display an error message indicating that geolocation is not supported.
-    console.error("Geolocation is not supported by this browser.");
-    view.center = [defaultLon, defaultLat];
-    // Call fetchPlaces with the default location
-    fetchPlaces(defaultLat, defaultLon);
+        // Callback function handling errors when attempting to retrieve the user's geolocation.
+        // Displays an error message indicating that geolocation is not available or permission is denied.
+        function (error) {
+          console.error("Error getting user location: ", error);
+          view.center = [defaultLon, defaultLat];
+          // Call fetchPlaces with the default location
+          fetchPlaces(defaultLat, defaultLon);
+        }
+      );
+    } else {
+      // Handle a scenario where geolocation is not supported by the user's browser.
+      // Display an error message indicating that geolocation is not supported.
+      console.error("Geolocation is not supported by this browser.");
+      view.center = [defaultLon, defaultLat];
+      // Call fetchPlaces with the default location
+      fetchPlaces(defaultLat, defaultLon);
+    }
   }
+
+  // retrieves the user's geolocation and displays nearby restaurants on a map
+  locationAndPlaces();
 });
