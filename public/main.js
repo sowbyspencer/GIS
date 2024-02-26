@@ -103,6 +103,7 @@ require([
     // Show the loading overlay
     document.getElementById("loadingOverlay").innerHTML = '<div id="loadingSpinner"></div>Calculating Overlay...'
     document.getElementById("loadingOverlay").style.display = "flex";
+    
 
     if (!travelMode) {
       const networkDescription = await networkService.fetchServiceDescription(
@@ -124,23 +125,18 @@ require([
       outSpatialReference: view.spatialReference,
       trimOuterPolygon: true,
     });
-    // Perform the following actions:
-    // - Use the `serviceArea.solve` method to calculate service areas.
-    // - Pass `url` and `serviceAreaParameters` as arguments to the `solve` method.
-    // - Use destructuring to extract the `serviceAreaPolygons` from the result of the `solve` method.
-    const { serviceAreaPolygons } = await serviceArea.solve(
-      url,
-      serviceAreaParameters
-    );
 
-    showServiceAreas(serviceAreaPolygons);
-    document.getElementById("loadingOverlay").style.display = "none";
     try {
-      const serviceAreaResult = await serviceArea.solve(
+      // Perform the following actions:
+      // - Use the `serviceArea.solve` method to calculate service areas.
+      // - Pass `url` and `serviceAreaParameters` as arguments to the `solve` method.
+      // - Use destructuring to extract the `serviceAreaPolygons` from the result of the `solve` method.
+      const { serviceAreaPolygons } = await serviceArea.solve(
         url,
         serviceAreaParameters
       );
-      showServiceAreas(serviceAreaResult.serviceAreaPolygons);
+
+      showServiceAreas(serviceAreaPolygons);
 
       // Hide the loading overlay once the calculation is complete
       document.getElementById("loadingOverlay").style.display = "none";
@@ -282,7 +278,7 @@ require([
 
   view.when(function () {
     // Hide the loading overlay
-    // document.getElementById("loadingOverlay").style.display = "none";
+    document.getElementById("loadingOverlay").style.display = "none";
   });
 
   // retrieves the user's geolocation and displays nearby restaurants on a map
