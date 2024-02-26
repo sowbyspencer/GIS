@@ -134,7 +134,7 @@ require([
     );
 
     showServiceAreas(serviceAreaPolygons);
-
+    document.getElementById("loadingOverlay").style.display = "none";
     try {
       const serviceAreaResult = await serviceArea.solve(
         url,
