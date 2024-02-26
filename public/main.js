@@ -101,7 +101,7 @@ require([
    */
   async function findServiceArea(locationFeature) {
     // Show the loading overlay
-    document.getElementById("loadingOverlay").innerHTML = '<div id="loadingSpinner"></div>Calculating Overlay...'
+    document.getElementById("loadingOverlay").innerHTML = '<div id="loadingSpinner"></div>Calculating Overlay..'
     document.getElementById("loadingOverlay").style.display = "flex";
     
 
@@ -278,7 +278,7 @@ require([
 
   view.when(function () {
     // Hide the loading overlay
-    document.getElementById("loadingOverlay").style.display = "none";
+    // document.getElementById("loadingOverlay").style.display = "none";
   });
 
   // retrieves the user's geolocation and displays nearby restaurants on a map
