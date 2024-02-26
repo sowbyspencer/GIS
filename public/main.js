@@ -41,7 +41,7 @@ require([
     container: "viewDiv",
     map,
     center: [-117.133163, 34.022445],
-    zoom: 13,
+    zoom: 10,
     constraints: {
       snapToZoom: false,
     },
@@ -100,6 +100,10 @@ require([
    * service area calculation.
    */
   async function findServiceArea(locationFeature) {
+    // Show the loading overlay
+    document.getElementById("loadingOverlay").innerHTML = '<div id="loadingSpinner"></div>Calculating Overlay...'
+    document.getElementById("loadingOverlay").style.display = "flex";
+
     if (!travelMode) {
       const networkDescription = await networkService.fetchServiceDescription(
         url
@@ -130,6 +134,21 @@ require([
     );
 
     showServiceAreas(serviceAreaPolygons);
+
+    try {
+      const serviceAreaResult = await serviceArea.solve(
+        url,
+        serviceAreaParameters
+      );
+      showServiceAreas(serviceAreaResult.serviceAreaPolygons);
+
+      // Hide the loading overlay once the calculation is complete
+      document.getElementById("loadingOverlay").style.display = "none";
+    } catch (error) {
+      console.error("Error solving service area: ", error);
+      // Hide the loading overlay in case of an error
+      document.getElementById("loadingOverlay").style.display = "none";
+    }
   }
 
   /**
@@ -253,6 +272,18 @@ require([
       fetchPlaces(defaultLat, defaultLon);
     }
   }
+
+  const toggleMenuButton = document.getElementById("toggleMenu");
+  const selectionMenu = document.getElementById("selectionMenu");
+
+  document.getElementById("toggleMenu").addEventListener("click", function () {
+    document.body.classList.toggle("collapsed");
+  });
+
+  view.when(function () {
+    // Hide the loading overlay
+    // document.getElementById("loadingOverlay").style.display = "none";
+  });
 
   // retrieves the user's geolocation and displays nearby restaurants on a map
   locationAndPlaces();
