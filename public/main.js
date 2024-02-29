@@ -23,14 +23,8 @@ require([
 ) {
   esriConfig.apiKey =
     "AAPK8e49e4e2abd64d5a90248a616a7a84b5wpFnclWyrsIGlXMXKmPOLW47c2Zf_jA3a8q4djCkHVQTAiU454MiP_yKiZGqtNvy";
-
-  /* Holds the URL endpoint for the ServiceArea_World ArcGIS REST service, used to calculate 
-  service areas from locations using the ArcGIS API. */
-  const url =
-    "https://route-api.arcgis.com/arcgis/rest/services/World/ServiceAreas/NAServer/ServiceArea_World";
-  let travelMode = null;
-
-  /* Create a new map using the ArcGIS API for JavaScript, with the basemap set to 
+  
+    /* Create a new map using the ArcGIS API for JavaScript, with the basemap set to 
   "arcgis-navigation" for navigation purposes. */
   const map = new Map({
     basemap: "arcgis-navigation",
@@ -47,6 +41,12 @@ require([
     },
   });
 
+  /* Holds the URL endpoint for the ServiceArea_World ArcGIS REST service, used to calculate 
+  service areas from locations using the ArcGIS API. */
+  const url =
+    "https://route-api.arcgis.com/arcgis/rest/services/World/ServiceAreas/NAServer/ServiceArea_World";
+  let travelMode = null;
+
   /* Create a new GraphicsLayer instance to display points, lines, and polygons on the map.
   Adding graphicsLayer to the map shows any graphics in this layer within the view. */
   var graphicsLayer = new GraphicsLayer();
@@ -61,10 +61,61 @@ require([
     createServiceAreas(view.center);
   });
 
-  // Adds event listener to view, triggering createServiceAreas with clicked mapPoint
+  var lastClickedLocation = null;
+
   view.on("click", (event) => {
+    lastClickedLocation = event.mapPoint;
     createServiceAreas(event.mapPoint);
   });
+
+  
+  /* The above JavaScript code is adding an event listener to a form with the
+  class "inputForm". When a keypress event occurs within the form, the code
+  iterates over all input elements within the form and adds a keydown event
+  listener to each input. */
+  document.querySelector(".inputForm").addEventListener("keypress", function () {
+      var form = document.querySelector(".inputForm");
+      var inputs = form.querySelectorAll("input");
+
+      inputs.forEach(function (input, index) {
+        input.addEventListener("keydown", function (event) {
+          if (event.key === "Enter") {
+            event.preventDefault(); // Prevent the form from submitting
+            var nextInput = inputs[index + 1];
+            if (nextInput) {
+              nextInput.focus(); // Set focus to the next input
+            } else {
+              form.querySelector('input[type="button"]').click(); // If there is no next input, click the Calculate button
+            }
+          }
+        });
+      });
+    });
+
+  /* The above code is adding an event listener to a button element of type
+  "button". When the button is clicked, it checks if a variable
+  `lastClickedLocation` is defined. If it is, it calls the function
+  `createServiceAreas` with the `lastClickedLocation` as an argument. If
+  `lastClickedLocation` is not defined, it gets the center point of a view
+  (which is assumed to be a map view) and calls the `createServiceAreas`
+  function with that point as an argument. */
+  document.querySelector('input[type="button"]').addEventListener("click", function () {
+      if (lastClickedLocation) {
+        createServiceAreas(lastClickedLocation);
+      } else {
+        var clickedPoint = view.center; // Example, you can modify this to use the actual clicked point
+        createServiceAreas(clickedPoint);
+      }
+    });
+
+  /* The above JavaScript code is adding an event listener to an element with the
+  id "toggleMenu". When this element is clicked, the code toggles the
+  "collapsed" class on the body element. This means that each time the element
+  with id "toggleMenu" is clicked, the "collapsed" class will be added if it's
+  not already present, or removed if it is already present. */
+  document.getElementById("toggleMenu").addEventListener("click", function () {
+      document.body.classList.toggle("collapsed");
+    });
 
   /**
    * Function createServiceAreas removes existing graphics, creates a new graphic at a specified
@@ -101,27 +152,49 @@ require([
    */
   async function findServiceArea(locationFeature) {
     // Show the loading overlay
-    document.getElementById("loadingOverlay").innerHTML = '<div id="loadingSpinner"></div>Calculating Overlay..'
+    document.getElementById("loadingOverlay").innerHTML =
+      '<div id="loadingSpinner"></div>Calculating Overlay..';
     document.getElementById("loadingOverlay").style.display = "flex";
-    
 
-    if (!travelMode) {
-      const networkDescription = await networkService.fetchServiceDescription(
-        url
-      );
-      travelMode = networkDescription.supportedTravelModes.find(
-        (travelMode) => travelMode.name === "Driving Time"
-      );
-    }
+    // Read values from the form inputs
+    var distanceTimeValue = document.getElementById("distance/time").value;
+    var areaType = document.querySelector(
+      'input[name="areaType"]:checked'
+    ).value;
+    var travelModeInput = document.querySelector(
+      'input[name="travelMode"]:checked'
+    ).value;
+    var travelDirectionInput = document.querySelector(
+      'input[name="travelDirection"]:checked'
+    ).value;
+
+    // Set the defaultBreaks based on the area type (distance or time)
+    var defaultBreaks = [parseFloat(distanceTimeValue)]; // Use the same value for both distance and time
+
+    // Combine the area type and travel mode input to create the travel mode string
+    var travelModeString = `${travelModeInput} ${areaType}`; // e.g., "Driving Time" or "Walking Distance"
+
+    // Set the travelDirection based on the input
+    var travelDirection =
+      travelDirectionInput === "From Location"
+        ? "from-facility"
+        : "to-facility";
+
+    const networkDescription = await networkService.fetchServiceDescription(
+      url
+    );
+    travelMode = networkDescription.supportedTravelModes.find(
+      (travelMode) => travelMode.name === travelModeString
+    );
 
     // Calculate and display the service area for a given location feature on a map.
     const serviceAreaParameters = new ServiceAreaParameters({
       facilities: new FeatureSet({
         features: [locationFeature],
       }),
-      defaultBreaks: [30], // minutes
+      defaultBreaks: defaultBreaks,
       travelMode,
-      travelDirection: "from-facility",
+      travelDirection: travelDirection,
       outSpatialReference: view.spatialReference,
       trimOuterPolygon: true,
     });
@@ -246,6 +319,7 @@ require([
         // to fetch nearby restaurants and display them as markers on the map.
         function (position) {
           view.center = [position.coords.longitude, position.coords.latitude];
+          lastClickedLocation = view.center;
           // Call fetchPlaces with the user's location
           fetchPlaces(position.coords.latitude, position.coords.longitude);
         },
@@ -268,13 +342,6 @@ require([
       fetchPlaces(defaultLat, defaultLon);
     }
   }
-
-  const toggleMenuButton = document.getElementById("toggleMenu");
-  const selectionMenu = document.getElementById("selectionMenu");
-
-  document.getElementById("toggleMenu").addEventListener("click", function () {
-    document.body.classList.toggle("collapsed");
-  });
 
   view.when(function () {
     // Hide the loading overlay

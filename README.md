@@ -1,6 +1,6 @@
 # Overview
 
-This project is a web-based GIS application designed to further my learning as a software engineer. The application displays a map using the ArcGIS API for JavaScript and allows users to view markers representing various locations, such as restaurants, parks, and schools, fetched dynamically using the Google Places API. Additionally, the application features interactive isochrone overlays that users can generate by clicking on the map. The overlays and markers are updated based on the clicked location, enhancing the geographical data interaction within the web application. The isochrone is currently set to a 30-minute driving time distance.
+This project is a web-based GIS application designed to further my learning as a software engineer. The application displays a map using the ArcGIS API for JavaScript and allows users to view markers representing various locations, such as restaurants, parks, and schools, fetched dynamically using the Google Places API. Additionally, the application features interactive isochrone overlays that users can generate by clicking on the map. The overlays are enhanced by user controls that vary the distance and type of travel, providing a more interactive experience with geographical data. The isochrone is set to a default 30-minute driving time distance.
 
 The purpose of this software is to gain hands-on experience with GIS technologies and to understand how to integrate and display geographical data in a web application.
 
@@ -29,9 +29,10 @@ The development environment for this project includes:
 
 Here are some areas for future development:
 
-* Add user controls to vary the distance and type of travel for the overlay.
-* Update the location markers in sync with the overlay updates per clicked location.
+* Update the location markers to sync with the overlay updates per clicked location.
 * Expand the variety and number of location types fetched from the Google Places API.
-* Enhance the interactivity of the isochrone overlays to include different travel modes and ranges.
 * Optimize the user interface for a more engaging user experience.
 * Integrate additional data sources for a more comprehensive data display.
+- Way Later
+    * Develop a feature to save and share custom isochrone maps.
+    * Implement real-time traffic data integration for more accurate travel time calculations.
