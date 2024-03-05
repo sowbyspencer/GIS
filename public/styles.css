@@ -10,7 +10,7 @@ body {
 
 #toggleMenu {
     position: absolute;
-    right: 0; /* Changed from left to right */
+    right: 0;
     top: 0;
     z-index: 3;
     background-color: #f4f4f4;
@@ -48,7 +48,7 @@ body {
     left: 0;
     top: 0;
     bottom: 0;
-    right: 20vw; /* Adjusted to accommodate the selection menu */
+    right: 200px; 
     z-index: 1;
 }
 
