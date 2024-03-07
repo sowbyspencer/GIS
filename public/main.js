@@ -64,8 +64,14 @@ require([
   var lastClickedLocation = null;
 
   view.on("click", (event) => {
-    lastClickedLocation = event.mapPoint;
-    createServiceAreas(event.mapPoint);
+    view.hitTest(event).then((response) => {
+      const graphic = response.results.find(result => result.graphic.layer === graphicsLayer)?.graphic;
+      if (!graphic) {
+        // Update the overlay only if a marker was not clicked
+        lastClickedLocation = event.mapPoint;
+        createServiceAreas(event.mapPoint);
+      }
+    });
   });
 
   
@@ -126,8 +132,13 @@ require([
   function createServiceAreas(point) {
     // Remove any existing graphics
     view.graphics.removeAll();
+
+    // Create the location graphic for the service area
     const locationGraphic = createGraphic(point);
     findServiceArea(locationGraphic);
+
+    // Fetch and display markers for the new location
+    fetchPlaces(point.latitude, point.longitude);
   }
 
   // Create the location graphic
@@ -244,6 +255,9 @@ require([
    * @param lon - Longitude coordinate of the location to fetch nearby restaurants.
    */
   function fetchPlaces(lat, lon) {
+    // Clear existing markers from the graphics layer
+    graphicsLayer.removeAll();
+
     var service = new google.maps.places.PlacesService(
       document.createElement("div")
     );
@@ -251,8 +265,8 @@ require([
     var request = {
       location: location,
       radius: "5000",
-      // type: ['hospital', 'store', 'bank', 'museum', 'church', 'atm', 'gas_station', 'library', 'zoo', 'airport', 'gym', 'movie_theater', 'hotel', 'restaurant', 'school', 'park']
-      type: ["restaurant"],
+      type: ['hospital', 'store', 'bank', 'museum', 'church', 'atm', 'gas_station', 'library', 'zoo', 'airport', 'gym', 'movie_theater', 'hotel', 'restaurant', 'school', 'park']
+      // type: ["restaurant"],
     };
 
     // Use the `service.nearbySearch` function to fetch nearby places based on
@@ -276,13 +290,22 @@ require([
             },
           };
 
+          var attributes = {
+            icon: place.icon,
+            name: place.name,
+            image: place.photos && place.photos.length > 0 ? place.photos[0].getUrl() : 'path/to/default/image.jpg', // Replace 'path/to/default/image.jpg' with your default image URL
+            address: place.vicinity,
+            rating: place.rating,
+          };
+
           // Define the content to be displayed in a popup when a user clicks on a marker
           // representing a place (e.g., a restaurant) on the map.
           var popupTemplate = {
-            title: "Place Information",
-            content: place.name,
+            title: "<img src='{icon}' height='20' width='20'> {name}",
+            content: "<img src='{image}' style='max-width:100%; max-height:175px; object-fit:contain;'><br>Address: {address}<br>Rating: {rating}"
           };
-
+          
+          
           // Create a new graphic object representing a marker on the map.
           // Properties:
           // - geometry: Point geometry for the marker.
@@ -291,6 +314,7 @@ require([
           var markerGraphic = new Graphic({
             geometry: point,
             symbol: markerSymbol,
+            attributes: attributes,
             popupTemplate: popupTemplate,
           });
 
@@ -320,8 +344,6 @@ require([
         function (position) {
           view.center = [position.coords.longitude, position.coords.latitude];
           lastClickedLocation = view.center;
-          // Call fetchPlaces with the user's location
-          fetchPlaces(position.coords.latitude, position.coords.longitude);
         },
 
         // Callback function handling errors when attempting to retrieve the user's geolocation.
@@ -329,8 +351,6 @@ require([
         function (error) {
           console.error("Error getting user location: ", error);
           view.center = [defaultLon, defaultLat];
-          // Call fetchPlaces with the default location
-          fetchPlaces(defaultLat, defaultLon);
         }
       );
     } else {
@@ -338,14 +358,10 @@ require([
       // Display an error message indicating that geolocation is not supported.
       console.error("Geolocation is not supported by this browser.");
       view.center = [defaultLon, defaultLat];
-      // Call fetchPlaces with the default location
-      fetchPlaces(defaultLat, defaultLon);
     }
   }
 
   view.when(function () {
-    // Hide the loading overlay
-    // document.getElementById("loadingOverlay").style.display = "none";
   });
 
   // retrieves the user's geolocation and displays nearby restaurants on a map

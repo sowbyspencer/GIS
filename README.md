@@ -29,7 +29,7 @@ The development environment for this project includes:
 
 Here are some areas for future development:
 
-* Update the location markers to sync with the overlay updates per clicked location.
+<!-- * Update the location markers to sync with the overlay updates per clicked location. -->
 * Expand the variety and number of location types fetched from the Google Places API.
 * Optimize the user interface for a more engaging user experience.
 * Integrate additional data sources for a more comprehensive data display.
