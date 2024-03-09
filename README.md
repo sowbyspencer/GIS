@@ -4,7 +4,7 @@ This project is a web-based GIS application designed to further my learning as a
 
 The purpose of this software is to gain hands-on experience with GIS technologies and to understand how to integrate and display geographical data in a web application.
 
-[Software Demo Video](http://youtube.link.goes.here)
+[Software Demo Video](https://youtu.be/BHdvXoBKUr4)
 
 [Try It Out](https://sowbyspencer.github.io/GIS/public/)
 
@@ -13,7 +13,6 @@ The purpose of this software is to gain hands-on experience with GIS technologie
 The development environment for this project includes:
 
 - Visual Studio Code as the IDE
-- Node.js for server-side scripting
 - ArcGIS API for JavaScript for map rendering and GIS functionalities
 - Google Places API for fetching location data
 - HTML, CSS, and JavaScript for front-end development
