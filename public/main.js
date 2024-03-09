@@ -262,16 +262,21 @@ require([
       document.createElement("div")
     );
     var location = new google.maps.LatLng(lat, lon);
+    /* The above JavaScript code is creating an object named `request` with the
+    following properties:
+    - `location`: This property is assigned the value of the `location`
+    variable.
+    - `radius`: This property is assigned the string value `"5000"`.
+    - `type`: This property is an array that is currently empty, but it is
+    commented out. There is a commented-out alternative assignment that
+    includes various types such as 'restaurant', 'hospital', 'store', etc. */
     var request = {
       location: location,
       radius: "5000",
-      type: ['hospital', 'store', 'bank', 'museum', 'church', 'atm', 'gas_station', 'library', 'zoo', 'airport', 'gym', 'movie_theater', 'hotel', 'restaurant', 'school', 'park']
-      // type: ["restaurant"],
+      type: ['restaurant']
+      // type: ['restaurant', 'hospital', 'store', 'bank', 'museum', 'church', 'atm', 'gas_station', 'library', 'zoo', 'airport', 'gym', 'movie_theater', 'school', 'park']
     };
 
-    // Use the `service.nearbySearch` function to fetch nearby places based on
-    // latitude and longitude coordinates. Send a request to the Google Maps Places API
-    // to search for places within a specified radius of the provided location.
     service.nearbySearch(request, function (results, status) {
       if (status === google.maps.places.PlacesServiceStatus.OK) {
         results.forEach(function (place) {
@@ -281,9 +286,27 @@ require([
             latitude: place.geometry.location.lat(),
           };
 
+          var typeColorMapping = {
+            hospital: [255, 0, 0], // Red
+            store: [0, 255, 0], // Green
+            // food: [0, 0, 255], // Blue
+            museum: [255, 255, 0], // Yellow
+            church: [255, 0, 255], // Magenta
+            // Add more mappings as needed
+          };
+
+          // Get the color for the first type of the place or default to orange
+          var markerColor = [226, 119, 40]; // Default to orange
+          for (var i = 0; i < place.types.length; i++) {
+            if (typeColorMapping[place.types[i]]) {
+              markerColor = typeColorMapping[place.types[i]];
+              break;
+            }
+          }
+
           var markerSymbol = {
             type: "simple-marker",
-            color: [226, 119, 40], // Orange
+            color: markerColor,
             outline: {
               color: [255, 255, 255], // White
               width: 1,
@@ -293,24 +316,16 @@ require([
           var attributes = {
             icon: place.icon,
             name: place.name,
-            image: place.photos && place.photos.length > 0 ? place.photos[0].getUrl() : 'path/to/default/image.jpg', // Replace 'path/to/default/image.jpg' with your default image URL
+            image: place.photos && place.photos.length > 0 ? place.photos[0].getUrl() : 'path/to/default/image.jpg',
             address: place.vicinity,
             rating: place.rating,
           };
 
-          // Define the content to be displayed in a popup when a user clicks on a marker
-          // representing a place (e.g., a restaurant) on the map.
           var popupTemplate = {
             title: "<img src='{icon}' height='20' width='20'> {name}",
             content: "<img src='{image}' style='max-width:100%; max-height:175px; object-fit:contain;'><br>Address: {address}<br>Rating: {rating}"
           };
-          
-          
-          // Create a new graphic object representing a marker on the map.
-          // Properties:
-          // - geometry: Point geometry for the marker.
-          // - symbol: Symbol used to display the marker.
-          // - popupTemplate: Template for the popup displayed when the marker is clicked.
+
           var markerGraphic = new Graphic({
             geometry: point,
             symbol: markerSymbol,
@@ -318,7 +333,6 @@ require([
             popupTemplate: popupTemplate,
           });
 
-          // Add a markerGraphic object to the graphicsLayer.
           graphicsLayer.add(markerGraphic);
         });
       }
