@@ -23,8 +23,8 @@ require([
 ) {
   esriConfig.apiKey =
     "AAPK8e49e4e2abd64d5a90248a616a7a84b5wpFnclWyrsIGlXMXKmPOLW47c2Zf_jA3a8q4djCkHVQTAiU454MiP_yKiZGqtNvy";
-  
-    /* Create a new map using the ArcGIS API for JavaScript, with the basemap set to 
+
+  /* Create a new map using the ArcGIS API for JavaScript, with the basemap set to 
   "arcgis-navigation" for navigation purposes. */
   const map = new Map({
     basemap: "arcgis-navigation",
@@ -65,7 +65,9 @@ require([
 
   view.on("click", (event) => {
     view.hitTest(event).then((response) => {
-      const graphic = response.results.find(result => result.graphic.layer === graphicsLayer)?.graphic;
+      const graphic = response.results.find(
+        (result) => result.graphic.layer === graphicsLayer
+      )?.graphic;
       if (!graphic) {
         // Update the overlay only if a marker was not clicked
         lastClickedLocation = event.mapPoint;
@@ -74,12 +76,13 @@ require([
     });
   });
 
-  
-  /* The above JavaScript code is adding an event listener to a form with the
+  /* Adding an event listener to a form with the
   class "inputForm". When a keypress event occurs within the form, the code
   iterates over all input elements within the form and adds a keydown event
   listener to each input. */
-  document.querySelector(".inputForm").addEventListener("keypress", function () {
+  document
+    .querySelector(".inputForm")
+    .addEventListener("keypress", function () {
       var form = document.querySelector(".inputForm");
       var inputs = form.querySelectorAll("input");
 
@@ -98,14 +101,16 @@ require([
       });
     });
 
-  /* The above code is adding an event listener to a button element of type
+  /* Adding an event listener to a button element of type
   "button". When the button is clicked, it checks if a variable
   `lastClickedLocation` is defined. If it is, it calls the function
   `createServiceAreas` with the `lastClickedLocation` as an argument. If
   `lastClickedLocation` is not defined, it gets the center point of a view
   (which is assumed to be a map view) and calls the `createServiceAreas`
   function with that point as an argument. */
-  document.querySelector('input[type="button"]').addEventListener("click", function () {
+  document
+    .querySelector('input[type="button"]')
+    .addEventListener("click", function () {
       if (lastClickedLocation) {
         createServiceAreas(lastClickedLocation);
       } else {
@@ -114,14 +119,14 @@ require([
       }
     });
 
-  /* The above JavaScript code is adding an event listener to an element with the
+  /* Adding an event listener to an element with the
   id "toggleMenu". When this element is clicked, the code toggles the
   "collapsed" class on the body element. This means that each time the element
   with id "toggleMenu" is clicked, the "collapsed" class will be added if it's
   not already present, or removed if it is already present. */
   document.getElementById("toggleMenu").addEventListener("click", function () {
-      document.body.classList.toggle("collapsed");
-    });
+    document.body.classList.toggle("collapsed");
+  });
 
   /**
    * Function createServiceAreas removes existing graphics, creates a new graphic at a specified
@@ -262,7 +267,7 @@ require([
       document.createElement("div")
     );
     var location = new google.maps.LatLng(lat, lon);
-    /* The above JavaScript code is creating an object named `request` with the
+    /* Creating an object named `request` with the
     following properties:
     - `location`: This property is assigned the value of the `location`
     variable.
@@ -273,7 +278,7 @@ require([
     var request = {
       location: location,
       radius: "5000",
-      type: ['restaurant']
+      type: ["restaurant"],
       // type: ['restaurant', 'hospital', 'store', 'bank', 'museum', 'church', 'atm', 'gas_station', 'library', 'zoo', 'airport', 'gym', 'movie_theater', 'school', 'park']
     };
 
@@ -316,14 +321,18 @@ require([
           var attributes = {
             icon: place.icon,
             name: place.name,
-            image: place.photos && place.photos.length > 0 ? place.photos[0].getUrl() : 'path/to/default/image.jpg',
+            image:
+              place.photos && place.photos.length > 0
+                ? place.photos[0].getUrl()
+                : "path/to/default/image.jpg",
             address: place.vicinity,
             rating: place.rating,
           };
 
           var popupTemplate = {
             title: "<img src='{icon}' height='20' width='20'> {name}",
-            content: "<img src='{image}' style='max-width:100%; max-height:175px; object-fit:contain;'><br>Address: {address}<br>Rating: {rating}"
+            content:
+              "<img src='{image}' style='max-width:100%; max-height:175px; object-fit:contain;'><br>Address: {address}<br>Rating: {rating}",
           };
 
           var markerGraphic = new Graphic({
@@ -375,8 +384,7 @@ require([
     }
   }
 
-  view.when(function () {
-  });
+  view.when(function () {});
 
   // retrieves the user's geolocation and displays nearby restaurants on a map
   locationAndPlaces();
