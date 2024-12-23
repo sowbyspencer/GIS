@@ -1,3 +1,4 @@
+// -------------------- Initialization ----------------------------------------
 require([
   "esri/config",
   "esri/Map",
@@ -54,6 +55,199 @@ require([
   /* Add graphicsLayer to the map to display graphics like points, lines, and polygons.*/
   map.add(graphicsLayer);
   view.ui.add(new ScaleBar({ view, style: "line" }), "bottom-right");
+
+  // -------------------- Utility Functions -----------------------------------
+
+  /**
+   * Function `getClientLocation` retrieves the user's geolocation and sets the
+   * map view center to the user's current location.
+   */
+  function getClientLocation() {
+    // Get the user's location or use the default location
+    var defaultLat = 65;
+    var defaultLon = 15;
+
+    // Check if geolocation is supported by the browser
+    if (navigator.geolocation) {
+      // Get the user's current location
+      navigator.geolocation.getCurrentPosition(
+        // Callback function executed when the user's geolocation is successfully retrieved.
+        function (position) {
+          // Set the center of the map view to the user's current location.
+          view.center = [position.coords.longitude, position.coords.latitude];
+
+          // Store the last clicked location as the center of the map view.
+          lastClickedLocation = view.center;
+        },
+
+        // Callback function executed when an error occurs while retrieving the user's geolocation.
+        function (error) {
+          // Display an error message indicating that geolocation is not available or permission is denied.
+          console.error("Error getting user location: ", error);
+
+          // Set the center of the map view to the default location.
+          view.center = [defaultLon, defaultLat];
+        }
+      );
+    } else {
+      // Display an error message indicating that geolocation is not supported by the browser.
+      console.error("Geolocation is not supported by this browser.");
+
+      // Set the center of the map view to the default location.
+      view.center = [defaultLon, defaultLat];
+    }
+  }
+
+  // Create the location graphic
+  function createGraphic(geometry) {
+    // Create a and add the point
+    const graphic = new Graphic({
+      geometry,
+      symbol: {
+        type: "simple-marker",
+        color: "white",
+        size: 8,
+      },
+    });
+    view.graphics.add(graphic);
+    return graphic;
+  }
+
+  // -------------------- Core Functionality ----------------------------------
+
+  /**
+   * Calculates and displays the service areas for a given location feature in increments.
+   * @param locationFeature - The feature that defines the center point for the service area calculation.
+   */
+  async function findServiceArea(locationFeature) {
+    // Show the loading overlay
+    document.getElementById("loadingOverlay").innerHTML =
+      '<div id="loadingSpinner"></div>Calculating Overlay..';
+    document.getElementById("loadingOverlay").style.display = "flex";
+
+    // Read values from the form inputs
+    const distanceTimeValue = parseFloat(
+      document.getElementById("distance/time").value
+    );
+    const areaType = document.querySelector(
+      'input[name="areaType"]:checked'
+    ).value;
+    const travelModeInput = document.querySelector(
+      'input[name="travelMode"]:checked'
+    ).value;
+    const travelDirectionInput = document.querySelector(
+      'input[name="travelDirection"]:checked'
+    ).value;
+
+    const travelModeString = `${travelModeInput} ${areaType}`;
+    const travelDirection =
+      travelDirectionInput === "From Location"
+        ? "from-facility"
+        : "to-facility";
+
+    const networkDescription = await networkService.fetchServiceDescription(
+      url
+    );
+    travelMode = networkDescription.supportedTravelModes.find(
+      (mode) => mode.name === travelModeString
+    );
+
+    // Check the state of the toggle
+    const isIncrementEnabled =
+      document.getElementById("incrementToggle").checked;
+
+    if (isIncrementEnabled) {
+      // Generate overlays for 15-minute/mile increments
+      const fullIncrements = Math.floor(distanceTimeValue / 15) * 15;
+      const remainder = distanceTimeValue % 15;
+
+      for (let i = 15; i <= fullIncrements; i += 15) {
+        await calculateAndDisplayOverlay(locationFeature, i);
+      }
+
+      if (remainder > 0 || fullIncrements === 0) {
+        await calculateAndDisplayOverlay(
+          locationFeature,
+          fullIncrements + remainder
+        );
+      }
+    } else {
+      // Generate a single overlay for the entire distance/time value
+      await calculateAndDisplayOverlay(locationFeature, distanceTimeValue);
+    }
+
+    // Hide the loading overlay when done
+    document.getElementById("loadingOverlay").style.display = "none";
+  }
+
+  /**
+   * Helper function to calculate and display a service area overlay.
+   * @param locationFeature - The feature at the center of the service area calculation.
+   * @param breakValue - The value for the current service area break.
+   */
+  async function calculateAndDisplayOverlay(locationFeature, breakValue) {
+    // Read the selected travel direction from the user input
+    const travelDirectionInput = document.querySelector(
+      'input[name="travelDirection"]:checked'
+    ).value;
+
+    // Map user input to the corresponding travelDirection for the API
+    const travelDirection =
+      travelDirectionInput === "From Location"
+        ? "from-facility"
+        : "to-facility";
+
+    // Create service area parameters
+    const serviceAreaParameters = new ServiceAreaParameters({
+      facilities: new FeatureSet({ features: [locationFeature] }), // Use the location as the facility
+      defaultBreaks: [breakValue], // Use the specified break value
+      travelMode, // Use the selected travel mode
+      travelDirection, // Use the user-selected travel direction
+      outSpatialReference: view.spatialReference, // Use the map's spatial reference
+      trimOuterPolygon: true, // Trim the outermost polygon to the break value
+    });
+
+    // Calculate the service area for the specified break value
+    try {
+      // Solve the service area for the specified break value
+      const { serviceAreaPolygons } = await serviceArea.solve(
+        url,
+        serviceAreaParameters
+      );
+      // Display the service area on the map
+      showServiceAreas(serviceAreaPolygons, breakValue);
+    } catch (error) {
+      console.error(`Error solving service area for ${breakValue}: `, error);
+    }
+  }
+
+  /**
+   * Function `showServiceAreas` adds service area polygons with the style selected by the user.
+   * @param serviceAreaPolygons - Object containing features representing polygons that define service areas.
+   * @param breakValue - The value for the current service area break.
+   */
+  function showServiceAreas(serviceAreaPolygons, breakValue) {
+    // Get the selected style from the dropdown menu
+    const selectedStyle = document.getElementById("overlayStyle").value;
+
+    // Create graphics for each service area polygon
+    const graphics = serviceAreaPolygons.features.map((g) => {
+      g.symbol = {
+        type: "simple-fill", // Fill symbol
+        style: selectedStyle, // Use the selected style
+        color: "rgba(255, 0, 0, 0.1)", // Red with transparency
+        outline: {
+          color: "black", // Black outline for all styles
+          width: 1, // Thin outline
+        },
+      };
+      return g;
+    });
+    // Add the service area graphics to the map.
+    view.graphics.addMany(graphics, 0);
+  }
+
+  // -------------------- Event Handlers --------------------------------------
 
   /* Create an event listener to call createServiceAreas with the map view's center as the 
   input once the view is ready.*/
@@ -148,195 +342,6 @@ require([
     // Create the location graphic for the service area
     const locationGraphic = createGraphic(point);
     findServiceArea(locationGraphic);
-  }
-
-  // Create the location graphic
-  function createGraphic(geometry) {
-    // Create a and add the point
-    const graphic = new Graphic({
-      geometry,
-      symbol: {
-        type: "simple-marker",
-        color: "white",
-        size: 8,
-      },
-    });
-    view.graphics.add(graphic);
-    return graphic;
-  }
-
-  /**
-   * Calculates and displays the service areas for a given location feature in increments.
-   * @param locationFeature - The feature that defines the center point for the service area calculation.
-   */
-  async function findServiceArea(locationFeature) {
-    // Show the loading overlay
-    document.getElementById("loadingOverlay").innerHTML =
-      '<div id="loadingSpinner"></div>Calculating Overlay..';
-    document.getElementById("loadingOverlay").style.display = "flex";
-
-    // Read values from the form inputs
-    // Read the distance/time value from the user input
-    const distanceTimeValue = parseFloat(
-      document.getElementById("distance/time").value
-    );
-    // Read the selected area type from the user input
-    const areaType = document.querySelector(
-      'input[name="areaType"]:checked'
-    ).value;
-    // Read the selected travel mode from the user input
-    const travelModeInput = document.querySelector(
-      'input[name="travelMode"]:checked'
-    ).value;
-    // Read the selected travel direction from the user input
-    const travelDirectionInput = document.querySelector(
-      'input[name="travelDirection"]:checked'
-    ).value;
-
-    // Combine the area type and travel mode input to create the travel mode string
-    const travelModeString = `${travelModeInput} ${areaType}`; // e.g., "Driving Time" or "Walking Distance"
-    const travelDirection =
-      travelDirectionInput === "From Location"
-        ? "from-facility"
-        : "to-facility";
-
-    // Fetch the service description for the network service
-    const networkDescription = await networkService.fetchServiceDescription(
-      url
-    );
-    // Find the travel mode that matches the user input
-    travelMode = networkDescription.supportedTravelModes.find(
-      (mode) => mode.name === travelModeString
-    );
-
-    // Generate overlays for 15-minute/mile increments
-    // Largest multiple of 15 <= user input
-    const fullIncrements = Math.floor(distanceTimeValue / 15) * 15;
-    // Remaining value if not a perfect multiple of 15
-    const remainder = distanceTimeValue % 15;
-
-    // Generate overlays for each full 15-minute/mile increment
-    for (let i = 15; i <= fullIncrements; i += 15) {
-      await calculateAndDisplayOverlay(locationFeature, i);
-    }
-
-    // Add an overlay for the remainder, if applicable
-    if (remainder > 0 || fullIncrements === 0) {
-      await calculateAndDisplayOverlay(
-        locationFeature,
-        fullIncrements + remainder
-      );
-    }
-
-    // Hide the loading overlay when done
-    document.getElementById("loadingOverlay").style.display = "none";
-  }
-
-  /**
-   * Helper function to calculate and display a service area overlay.
-   * @param locationFeature - The feature at the center of the service area calculation.
-   * @param breakValue - The value for the current service area break.
-   */
-  async function calculateAndDisplayOverlay(locationFeature, breakValue) {
-    // Read the selected travel direction from the user input
-    const travelDirectionInput = document.querySelector(
-      'input[name="travelDirection"]:checked'
-    ).value;
-
-    // Map user input to the corresponding travelDirection for the API
-    const travelDirection =
-      travelDirectionInput === "From Location"
-        ? "from-facility"
-        : "to-facility";
-
-    // Create service area parameters
-    const serviceAreaParameters = new ServiceAreaParameters({
-      facilities: new FeatureSet({ features: [locationFeature] }), // Use the location as the facility
-      defaultBreaks: [breakValue], // Use the specified break value
-      travelMode, // Use the selected travel mode
-      travelDirection, // Use the user-selected travel direction
-      outSpatialReference: view.spatialReference, // Use the map's spatial reference
-      trimOuterPolygon: true, // Trim the outermost polygon to the break value
-    });
-
-    // Calculate the service area for the specified break value
-    try {
-      // Solve the service area for the specified break value
-      const { serviceAreaPolygons } = await serviceArea.solve(
-        url,
-        serviceAreaParameters
-      );
-      // Display the service area on the map
-      showServiceAreas(serviceAreaPolygons, breakValue);
-    } catch (error) {
-      console.error(`Error solving service area for ${breakValue}: `, error);
-    }
-  }
-
-  /**
-   * Function `showServiceAreas` adds service area polygons with the style selected by the user.
-   * @param serviceAreaPolygons - Object containing features representing polygons that define service areas.
-   * @param breakValue - The value for the current service area break.
-   */
-  function showServiceAreas(serviceAreaPolygons, breakValue) {
-    // Get the selected style from the dropdown menu
-    const selectedStyle = document.getElementById("overlayStyle").value;
-
-    // Create graphics for each service area polygon
-    const graphics = serviceAreaPolygons.features.map((g) => {
-      g.symbol = {
-        type: "simple-fill", // Fill symbol
-        style: selectedStyle, // Use the selected style
-        color: "rgba(255, 0, 0, 0.2)", // Red with transparency
-        outline: {
-          color: "black", // Black outline for all styles
-          width: 1, // Thin outline
-        },
-      };
-      return g;
-    });
-    // Add the service area graphics to the map.
-    view.graphics.addMany(graphics, 0);
-  }
-
-  /**
-   * Function `getClientLocation` retrieves the user's geolocation and sets the
-   * map view center to the user's current location.
-   */
-  function getClientLocation() {
-    // Get the user's location or use the default location
-    var defaultLat = 65;
-    var defaultLon = 15;
-
-    // Check if geolocation is supported by the browser
-    if (navigator.geolocation) {
-      // Get the user's current location
-      navigator.geolocation.getCurrentPosition(
-        // Callback function executed when the user's geolocation is successfully retrieved.
-        function (position) {
-          // Set the center of the map view to the user's current location.
-          view.center = [position.coords.longitude, position.coords.latitude];
-
-          // Store the last clicked location as the center of the map view.
-          lastClickedLocation = view.center;
-        },
-
-        // Callback function executed when an error occurs while retrieving the user's geolocation.
-        function (error) {
-          // Display an error message indicating that geolocation is not available or permission is denied.
-          console.error("Error getting user location: ", error);
-
-          // Set the center of the map view to the default location.
-          view.center = [defaultLon, defaultLat];
-        }
-      );
-    } else {
-      // Display an error message indicating that geolocation is not supported by the browser.
-      console.error("Geolocation is not supported by this browser.");
-
-      // Set the center of the map view to the default location.
-      view.center = [defaultLon, defaultLat];
-    }
   }
 
   // Wait for the view to be ready before creating service areas
