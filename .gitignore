@@ -1,3 +1,4 @@
 # Ignore API key file in public folder
 public/APIKEY.key
-
+node_modules/
+.env
