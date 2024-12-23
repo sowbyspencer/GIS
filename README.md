@@ -36,12 +36,11 @@ The development environment for this project includes:
 
 # Version History
 
-| Version                                | Date       | Changes                                                                 |
-| -------------------------------------- | ---------- | ----------------------------------------------------------------------- |
-| 0.0.1                                  |            | Initial release with basic map and overlays.                            |
-| 0.0.2                                  |            | Added Google Places API integration.                                    |
-| 0.0.3                                  | 12/23/2024 | Added custom increments, overlay styles, and dynamic travel directions. |
-| Removed Google places API and markers. |
+| Version | Date       | Changes                                                                                                        |
+| ------- | ---------- | -------------------------------------------------------------------------------------------------------------- |
+| 0.0.1   |            | Initial release with basic map and overlays.                                                                   |
+| 0.0.2   |            | Added Google Places API integration.                                                                           |
+| 0.0.3   | 12/23/2024 | Added custom increments, overlay styles, and dynamic travel directions. Removed Google places API and markers. |
 
 # Future Work
 
