@@ -21,8 +21,6 @@
   <!-- <script type="module" src="js/main.js"></script>
   <script src="https://js.arcgis.com/4.28/"></script>
   <script type="module" src="js/main.js"></script> -->
-
-
 </head>
 
 <body>
@@ -34,27 +32,32 @@
   <div id="selectionMenu">
     (In Development)
     <form class="inputForm">
+      <!-- Create a form with an id of 'inputForm' -->
       <label for="distance/time">Distance/Time</label><br>
       <input type="number" id="distance/time" value="30" aria-valuemin="0" />
 
+      <!-- Create a label element with the text 'Unit of Measurement' -->
       <p>Area Type:</p>
       <input type="radio" id="distance" name="areaType" value="Distance"  />
       <label for="distance">Distance</label><br></br>
       <input type="radio" id="time" name="areaType" value="Time" checked/>
       <label for="time">Time</label>
 
+      <!-- Create a label element with the text 'Unit of Measurement' -->
       <p>Travel Mode:</p>
       <input type="radio" id="driving" name="travelMode" value="Driving" checked />
       <label for="driving">Driving</label><br></br>
       <input type="radio" id="walking" name="travelMode" value="Walking" />
       <label for="walking">Walking</label>
 
+      <!-- Create a label element with the text 'Unit of Measurement' -->
       <p>Travel Direction:</p>
       <input type="radio" id="from" name="travelDirection" value="From Location" checked />
       <label for="from">From</label><br></br>
       <input type="radio" id="to" name="travelDirection" value="To Location" />
       <label for="to">To</label>
 
+      <!-- Create a label element with the text 'Unit of Measurement' -->
       <p>Overlay Style:</p>
       <select id="overlayStyle">
         <option value="solid" selected>Solid</option>
@@ -68,10 +71,12 @@
       </select>
       <br></br>
 
+      <!-- Create a label element with the text 'Unit of Measurement' -->
       <input type="checkbox" id="incrementToggle" unchecked />
       <label for="incrementToggle">Enable 15-minute/mile Increment:</label>
-      
       <br></br>
+
+      <!-- Create a label element with the text 'Unit of Measurement' -->
       <input type="button" value="Calculate"/>
     </form>
   </div>
